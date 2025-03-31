@@ -1,0 +1,167 @@
+\documentclass[twocolumn]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{float}
+
+\title{Detecting Parkinson’s Disease Through Handwriting Using a CNN Model}
+\author{
+    The University of Science and Technology of Hanoi\\
+    Group 6\\
+    Nguyen Tran Minh Quan 22BI13375\\
+    Bui Thanh Vinh 22BI13469\\
+    Pham Tien Dat 22BI13080\\
+    Nguyen Quoc Khach 22BI13210\\
+}
+
+\date{Machine Learning in Medicine\\
+Lecturer: Assoc. Prof. Tran Giang Son}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Introduction}
+Parkinson’s Disease is a progressive disorder of the nervous system that primarily affects movement. One of its early symptoms is hand tremor, which often alters a person’s ability to write or draw smoothly. As these motor changes can be subtle, handwriting analysis has been studied as a possible tool for early detection. In this project, we explored the use of a deep learning model to classify whether an individual is affected by Parkinson’s Disease based on images of spiral and meander drawings. Our objective was to build a working model that could learn to identify visual differences between drawings made by healthy individuals and those with Parkinson’s, contributing to research in non-invasive screening methods.
+
+\section{Dataset}
+The dataset we used comes from Kaggle and includes spiral and meander drawings collected from both Parkinson’s patients and healthy individuals. These drawings were divided into four groups:
+\begin{itemize}
+    \item Spiral images from healthy individuals (SpiralControl)
+    \item Spiral images from Parkinson’s patients (SpiralPatients)
+    \item Meander images from healthy individuals (MeanderControl)
+    \item Meander images from patients (MeanderPatients)
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Display_Sample.png}
+    \caption{Display Sample}
+    \label{fig:enter-label}
+\end{figure}
+
+Here’s a breakdown of the dataset:
+\begin{center}
+\begin{tabular}{lc}
+    \toprule
+    Category & Number of Images \\
+    \midrule
+    SpiralControl & 73 \\
+    SpiralPatients & 297 \\
+    MeanderControl & 73 \\
+    MeanderPatients & 297 \\
+    \bottomrule
+\end{tabular}
+
+
+Here's the Distribution plot:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Class_Distribution.png}
+    \caption{Class Distribution}
+    \label{fig:enter-label}
+\end{figure}
+
+\end{center}
+As we can see, the dataset contains significantly more images from patients than from healthy individuals. This imbalance posed some challenges during model training and evaluation, particularly for the underrepresented control classes.
+
+\section{Data Preprocessing}
+Before training our model, we performed several preprocessing steps:
+\begin{itemize}
+    \item Verified the images and removed any corrupted files.
+    \item Converted all images to grayscale to simplify the input and reduce computational load.
+    \item Resized each image to 128x128 pixels for uniformity.
+    \item Normalized the pixel values by scaling them to a 0–1 range.
+    \item Assigned labels to each category (0 for healthy, 1 for Parkinson’s) and encoded them accordingly.
+    \item Split the dataset into training and test sets in an 80:20 ratio.
+\end{itemize}
+
+\section{CNN Model Architecture}
+We built a simple Convolutional Neural Network (CNN) using TensorFlow and Keras. The architecture includes:
+\begin{itemize}
+    \item Two convolutional layers with 32 and 64 filters, each followed by a ReLU activation and max pooling layer.
+    \item A flattening layer and a fully connected dense layer with 128 units and a ReLU activation function.
+    \item A dropout layer with a rate of 0.5 to prevent overfitting.
+    \item An output layer using softmax activation to classify images into four categories.
+\end{itemize}
+We compiled the model using the Adam optimizer and trained it using the categorical cross-entropy loss function. The model was trained over 10 epochs with a batch size of 32.
+
+\section{Results and Evaluation}
+After training, the model achieved an accuracy of approximately 81.7\% on the test set. Beyond accuracy, we evaluated performance using precision, recall, and F1-score:
+
+\begin{center}
+\begin{tabular}{lc}
+    \toprule
+    Metric & Score \\
+    \midrule
+    Accuracy & 81.7\% \\
+    Precision & 82.0\% \\
+    Recall & 67.3\% \\
+    F1-score & 68.7\% \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+In terms of class-wise performance, the model performed best on the meander images—both control and patient—with F1-scores above 0.80. The SpiralControl category had the lowest performance, likely due to the small number of available training samples.
+
+To visualize the results, we displayed a sample of test images along with their predicted labels, true labels, and the model’s confidence levels. This helped us understand where the model was confident and accurate, and where it struggled.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{603ddb9d-a71d-4a25-8022-5850fea1c3ed.jpg}
+    \caption{Confusion Matrix}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Model_Prediction.png}
+    \caption{Model Prediction}
+    \label{fig:enter-label}
+\end{figure}
+
+\subsection*{Comparison with ResNet50V2}
+
+To further evaluate the effectiveness of our classification approach, we compared the performance of our simple CNN model with a more complex architecture—\textbf{ResNet50V2}. Both models were trained using the same image categories (spiral and meander drawings) obtained from Parkinson’s patients and healthy individuals. The classification report for ResNet50V2 is shown in Table~\ref{tab:resnet50v2_report}.
+
+\begin{table}[H]
+\centering
+\caption{Classification Report of ResNet50V2}
+\label{tab:resnet50v2_report}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-score} & \textbf{Support} \\
+\midrule
+Healthy & 0.83 & 0.59 & 0.69 & 41 \\
+Parkinson & 0.91 & 0.97 & 0.94 & 174 \\
+\midrule
+\textbf{Accuracy} & \multicolumn{4}{c}{0.90 (215 samples)} \\
+\textbf{Macro avg} & 0.87 & 0.78 & 0.81 & 215 \\
+\textbf{Weighted avg} & 0.89 & 0.90 & 0.89 & 215 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+While the ResNet50V2 model achieved higher overall accuracy (90\%) compared to the simple CNN (81.7\%), a closer inspection reveals important caveats. Figure~\ref{fig:resnet50v2_output} shows a sample of the model’s predictions and confidence scores. Although many predictions appear confident, a number of healthy samples were misclassified as Parkinson’s with high confidence. This suggests that the model may be overfitting or failing to generalize subtle features distinguishing healthy patterns.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{486413210_572041541838269_2334968670867003496_n.png}
+\caption{ResNet50V2 output predictions. Some healthy samples were misclassified with high confidence.}
+\label{fig:resnet50v2_output}
+\end{figure}
+
+One possible explanation for this issue lies in the dataset handling process. The simple CNN model was trained on both spiral and meander datasets simultaneously, while keeping them as separate inputs. In contrast, ResNet50V2 was trained on a merged dataset, potentially losing class-specific spatial features. This merging may have reduced the model’s ability to distinguish between healthy and Parkinsonian patterns based on drawing type.
+
+\noindent In conclusion, despite higher metrics, the ResNet50V2 model may not generalize as effectively in practice compared to the simpler CNN model, emphasizing the need for both qualitative and quantitative evaluations.
+
+
+\section{Discussion}
+The results show that our CNN model can identify Parkinson’s Disease from handwriting patterns with a decent level of accuracy. It worked especially well with meander drawings, which may contain more distinguishable features compared to spirals. However, the relatively small number of control samples—particularly spiral control drawings—limited the model’s ability to generalize well across all classes.
+
+There’s room for improvement. In future work, we could balance the dataset by applying data augmentation techniques like rotation, scaling, and shifting. We also believe that using a more advanced CNN architecture or a pre-trained model (such as VGG or MobileNet) might lead to better performance. To increase transparency, it would also be useful to implement explainability techniques such as Grad-CAM to visualize which parts of the images the model focuses on when making decisions.
+
+\section{Conclusion}
+This project explored the use of convolutional neural networks to classify handwriting drawings from individuals with and without Parkinson’s Disease. We trained a simple CNN model on a public dataset of spiral and meander images and achieved a test accuracy of over 80\%. While the results are promising, especially for meander drawings, the model’s performance can be further improved through data augmentation, transfer learning, and explainability tools. Overall, this work shows the potential of using handwriting analysis as a supporting tool in the early detection of Parkinson’s Disease.
+
+\end{document}
